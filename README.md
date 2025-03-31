@@ -3,7 +3,7 @@
 https://mitmproxy.org/ を使って HTTP Request を JSON で stdout に出力する
 
 ```
-docker run --rm -p 8080 -t ghcr.io/yteraoka/mitmproxy-container
+docker run --rm -p 8080:8080 -t ghcr.io/yteraoka/mitmproxy-container
 ```
 
 ```
@@ -29,7 +29,7 @@ cat ca.key ca.crt > ~/.mitmproxy/mitmproxy-ca.pem
 この Dockerfile では環境変数 `MITMPROXY_CACERT_WITH_KEY` の中身を `~/.mitmproxy/mitmproxy-ca.pem` に書き出すようになっているため
 
 ```
-docker run --rm -p 8080 -t \
+docker run --rm -p 8080:8080 -t \
   -e MITMPROXY_CACERT_WITH_KEY="$(cat ~/.mitmproxy/mitmproxy-ca.pem)" \
   ghcr.io/yteraoka/mitmproxy-container
 ```
@@ -41,3 +41,13 @@ curl -sx http://127.0.0.1:8080 --cacert ca.crt https://www.example.com/
 ```
 
 mitmproxy の発行する証明書を信頼することができる
+
+mitmproxy からの upstream 接続での証明書検証に独自の証明書が必要な場合は `UPSTREAM_CACERT` 環境変数に
+PEM を文字列で指定するとファイルに書き出して `ssl_verify_upstream_trusted_ca` オプションで指定される
+
+```
+docker run --rm -p 8080:8080 -t \
+  -e MITMPROXY_CACERT_WITH_KEY="$(cat ~/.mitmproxy/mitmproxy-ca.pem)" \
+  -e UPSTREAM_CACERT="$(cat ./zscaler.pem)" \
+  ghcr.io/yteraoka/mitmproxy-container
+```
